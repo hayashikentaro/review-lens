@@ -2,10 +2,22 @@
   "name": "review-lens",
   "version": "0.1.0",
   "private": true,
-  "description": "Initial Review Lens application skeleton.",
+  "description": "Review Lens semantic code review frontend.",
   "type": "module",
   "scripts": {
-    "check": "node --test",
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "check": "tsc -b && node --test",
     "test": "node --test"
+  },
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.9.0",
+    "vite": "^6.0.0"
   }
 }
