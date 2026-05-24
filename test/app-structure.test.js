@@ -70,7 +70,10 @@ test("dependency graph lens has typed analysis model and analyzer", async () => 
     new URL("../src/analysis/dependencyGraph.ts", import.meta.url),
     "utf8"
   );
-  const app = await readFile(new URL("../src/App.tsx", import.meta.url), "utf8");
+  const dependencyLens = await readFile(
+    new URL("../src/components/DependencyGraphLens.tsx", import.meta.url),
+    "utf8"
+  );
 
   assert.match(analysis, /export type DependencyNode/);
   assert.match(analysis, /export type DependencyEdge/);
@@ -79,6 +82,23 @@ test("dependency graph lens has typed analysis model and analyzer", async () => 
   assert.match(analysis, /circular-dependency/);
   assert.match(analysis, /architecture-boundary-risk/);
   assert.match(analysis, /direct-ai-import/);
-  assert.match(app, /DependencyGraphLens/);
-  assert.match(app, /Dependency graph evidence/);
+  assert.match(dependencyLens, /DependencyGraphLens/);
+  assert.match(dependencyLens, /Dependency Graph/);
+});
+
+test("architecture boundary lens uses dependency graph analysis", async () => {
+  const architectureLens = await readFile(
+    new URL("../src/components/ArchitectureBoundaryLens.tsx", import.meta.url),
+    "utf8"
+  );
+  const app = await readFile(new URL("../src/App.tsx", import.meta.url), "utf8");
+  const reviewModel = await readFile(new URL("../src/reviewModel.ts", import.meta.url), "utf8");
+
+  assert.match(architectureLens, /ArchitectureBoundaryLens/);
+  assert.match(architectureLens, /Boundary Map/);
+  assert.match(architectureLens, /Allowed dependency direction/);
+  assert.match(architectureLens, /architecture-boundary-risk/);
+  assert.match(architectureLens, /direct-ai-import/);
+  assert.match(app, /activeLens === "Architecture"/);
+  assert.match(reviewModel, /topArchitectureFinding/);
 });

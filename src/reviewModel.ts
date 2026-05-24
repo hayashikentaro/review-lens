@@ -2,6 +2,13 @@ import type { LensDefinition, LensFinding, LensName, ReviewTarget } from "./type
 import { dependencyGraphAnalysis } from "./analysis/dependencyGraph";
 
 const topDependencyFinding = dependencyGraphAnalysis.findings[0];
+const topArchitectureFinding =
+  dependencyGraphAnalysis.findings.find(
+    (finding) =>
+      finding.kind === "architecture-boundary-risk" ||
+      finding.kind === "direct-ai-import" ||
+      finding.kind === "god-module"
+  ) ?? topDependencyFinding;
 
 export const lensNames: LensName[] = [
   "Overview",
@@ -86,12 +93,16 @@ export const findings: LensFinding[] = [
   },
   {
     id: "architecture-domain-boundary",
-    title: "Domain logic appears in the delivery layer",
+    title: topArchitectureFinding?.title ?? "Architecture boundary needs review",
     lens: "Architecture",
-    severity: "Medium",
-    meta: "Module boundary",
-    evidence: "The sample review item marks business branching near a route adapter.",
-    question: "Should this decision live in a service boundary instead?",
+    severity: topArchitectureFinding?.severity ?? "High",
+    meta: "Boundary risk",
+    evidence:
+      topArchitectureFinding?.evidence ??
+      "Architecture Boundary Lens derives boundary findings from the dependency graph analyzer.",
+    question:
+      topArchitectureFinding?.question ??
+      "Which boundary should generated code respect before this patch is trusted?",
     sourceAnchor: "#architecture"
   },
   {

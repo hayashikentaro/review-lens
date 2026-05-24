@@ -77,6 +77,7 @@ export type DependencyGraphSummary = {
 export type DependencyGraphAnalysis = {
   nodes: DependencyNode[];
   edges: DependencyEdge[];
+  boundaries: ArchitectureBoundary[];
   findings: DependencyFinding[];
   cycles: DependencyCycle[];
   summary: DependencyGraphSummary;
@@ -291,6 +292,7 @@ export function analyzeDependencyGraph(dataset: DependencyGraphDataset): Depende
   return {
     nodes: dataset.nodes,
     edges: dataset.edges,
+    boundaries: dataset.boundaries,
     findings,
     cycles,
     summary: {
