@@ -127,3 +127,27 @@ test("security lens derives danger paths from typed security analysis", async ()
   assert.match(app, /activeLens === "Security"/);
   assert.match(reviewModel, /topSecurityFinding/);
 });
+
+test("package addition lens treats package additions as trust-boundary events", async () => {
+  const packageAnalysis = await readFile(
+    new URL("../src/analysis/packageAddition.ts", import.meta.url),
+    "utf8"
+  );
+  const packageLens = await readFile(
+    new URL("../src/components/PackageAdditionLens.tsx", import.meta.url),
+    "utf8"
+  );
+  const app = await readFile(new URL("../src/App.tsx", import.meta.url), "utf8");
+  const reviewModel = await readFile(new URL("../src/reviewModel.ts", import.meta.url), "utf8");
+
+  assert.match(packageAnalysis, /export type PackageAddition/);
+  assert.match(packageAnalysis, /export type PackageFinding/);
+  assert.match(packageAnalysis, /export function analyzePackageAdditions/);
+  assert.match(packageAnalysis, /external-code-trust-boundary/);
+  assert.match(packageAnalysis, /transitive-expansion/);
+  assert.match(packageLens, /Package Addition Review/);
+  assert.match(packageLens, /External code entering trust boundary/);
+  assert.match(packageLens, /external code crossing into the/);
+  assert.match(app, /activeLens === "Packages"/);
+  assert.match(reviewModel, /topPackageFinding/);
+});

@@ -10,10 +10,13 @@ import {
 import type { LensFinding, LensName } from "./types";
 import { dependencyGraphAnalysis } from "./analysis/dependencyGraph";
 import type { DependencyFinding } from "./analysis/dependencyGraph";
+import { packageAdditionAnalysis } from "./analysis/packageAddition";
+import type { PackageFinding } from "./analysis/packageAddition";
 import { securityAnalysis } from "./analysis/securityRisk";
 import type { SecurityFinding } from "./analysis/securityRisk";
 import { ArchitectureBoundaryLens } from "./components/ArchitectureBoundaryLens";
 import { DependencyGraphLens } from "./components/DependencyGraphLens";
+import { PackageAdditionLens } from "./components/PackageAdditionLens";
 import { SecurityLens } from "./components/SecurityLens";
 import { severityClass } from "./components/severity";
 
@@ -120,6 +123,10 @@ type GraphMapProps = {
 };
 
 function GraphMap({ activeLens, summaryCopy, summaryTitle }: GraphMapProps) {
+  if (activeLens === "Packages") {
+    return <PackageAdditionLens summaryCopy={summaryCopy} summaryTitle={summaryTitle} />;
+  }
+
   if (activeLens === "Security") {
     return <SecurityLens summaryCopy={summaryCopy} summaryTitle={summaryTitle} />;
   }
@@ -173,6 +180,7 @@ function DetailCard({ finding }: DetailCardProps) {
         )
       : dependencyGraphAnalysis.findings[0];
   const securityFinding = securityAnalysis.findings[0];
+  const packageFinding = packageAdditionAnalysis.findings[0];
 
   return (
     <aside className="pane detail-card" aria-labelledby="detail-card-title">
@@ -210,8 +218,25 @@ function DetailCard({ finding }: DetailCardProps) {
         {finding.lens === "Security" && securityFinding ? (
           <SecurityEvidence finding={securityFinding} />
         ) : null}
+        {finding.lens === "Packages" && packageFinding ? (
+          <PackageEvidence finding={packageFinding} />
+        ) : null}
       </article>
     </aside>
+  );
+}
+
+function PackageEvidence({ finding }: { finding: PackageFinding }) {
+  return (
+    <section className="dependency-evidence package-evidence" aria-label="Package addition evidence">
+      <h4>Package trust boundary evidence</h4>
+      <p>{finding.kind}</p>
+      <ul>
+        <li>{finding.packageIds.length} package addition involved</li>
+        <li>{finding.nodeIds.length} requesting module involved</li>
+        <li>Evidence comes from the typed mock package analyzer.</li>
+      </ul>
+    </section>
   );
 }
 

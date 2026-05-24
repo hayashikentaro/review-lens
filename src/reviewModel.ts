@@ -1,8 +1,10 @@
 import type { LensDefinition, LensFinding, LensName, ReviewTarget } from "./types";
 import { dependencyGraphAnalysis } from "./analysis/dependencyGraph";
+import { packageAdditionAnalysis } from "./analysis/packageAddition";
 import { securityAnalysis } from "./analysis/securityRisk";
 
 const topDependencyFinding = dependencyGraphAnalysis.findings[0];
+const topPackageFinding = packageAdditionAnalysis.findings[0];
 const topSecurityFinding = securityAnalysis.findings[0];
 const topArchitectureFinding =
   dependencyGraphAnalysis.findings.find(
@@ -127,12 +129,16 @@ export const findings: LensFinding[] = [
   },
   {
     id: "packages-release-boundary",
-    title: "Package impact needs release-boundary context",
+    title: topPackageFinding?.title ?? "Package addition needs trust-boundary review",
     lens: "Packages",
-    severity: "Low",
-    meta: "Release boundary",
-    evidence: "The package view is prepared as a placeholder for future workspace scanning.",
-    question: "Which package would publish or deploy this behavior?",
+    severity: topPackageFinding?.severity ?? "High",
+    meta: "Package addition",
+    evidence:
+      topPackageFinding?.evidence ??
+      "Package Addition Lens treats new packages as external code entering the repository trust boundary.",
+    question:
+      topPackageFinding?.question ??
+      "What evidence makes this external code acceptable inside the repository?",
     sourceAnchor: "#packages"
   },
   {
@@ -207,9 +213,9 @@ export const lensDefinitions: LensDefinition[] = [
   },
   {
     name: "Packages",
-    summaryTitle: "Package and release lens",
+    summaryTitle: "Package addition trust-boundary lens",
     summaryCopy:
-      "Surfaces workspace packages, release boundaries, ownership, generated artifacts, and package-level compatibility.",
+      "Surfaces new packages as external code entering the repository trust boundary, with runtime, transitive, and review-evidence risk.",
     primaryFindingId: "packages-release-boundary"
   },
   {
