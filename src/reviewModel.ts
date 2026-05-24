@@ -1,4 +1,7 @@
 import type { LensDefinition, LensFinding, LensName, ReviewTarget } from "./types";
+import { dependencyGraphAnalysis } from "./analysis/dependencyGraph";
+
+const topDependencyFinding = dependencyGraphAnalysis.findings[0];
 
 export const lensNames: LensName[] = [
   "Overview",
@@ -93,12 +96,16 @@ export const findings: LensFinding[] = [
   },
   {
     id: "dependencies-supply-chain",
-    title: "Runtime dependency needs supply-chain review",
+    title: topDependencyFinding?.title ?? "Dependency graph needs architecture review",
     lens: "Dependencies",
-    severity: "Low",
-    meta: "Runtime exposure",
-    evidence: "The skeleton reserves dependency review without real package analysis yet.",
-    question: "Which team owns dependency acceptance for this repo?",
+    severity: topDependencyFinding?.severity ?? "High",
+    meta: "Graph risk",
+    evidence:
+      topDependencyFinding?.evidence ??
+      "Dependency Graph Lens analyzes mock repository modules for dependency risk.",
+    question:
+      topDependencyFinding?.question ??
+      "Which dependency edge should a reviewer inspect before trusting generated code?",
     sourceAnchor: "#dependencies"
   },
   {

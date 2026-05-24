@@ -64,3 +64,21 @@ test("TypeScript UI models are explicit", async () => {
   assert.match(types, /export type LensDefinition/);
   assert.match(types, /sourceAnchor: string/);
 });
+
+test("dependency graph lens has typed analysis model and analyzer", async () => {
+  const analysis = await readFile(
+    new URL("../src/analysis/dependencyGraph.ts", import.meta.url),
+    "utf8"
+  );
+  const app = await readFile(new URL("../src/App.tsx", import.meta.url), "utf8");
+
+  assert.match(analysis, /export type DependencyNode/);
+  assert.match(analysis, /export type DependencyEdge/);
+  assert.match(analysis, /export type DependencyGraphAnalysis/);
+  assert.match(analysis, /export function analyzeDependencyGraph/);
+  assert.match(analysis, /circular-dependency/);
+  assert.match(analysis, /architecture-boundary-risk/);
+  assert.match(analysis, /direct-ai-import/);
+  assert.match(app, /DependencyGraphLens/);
+  assert.match(app, /Dependency graph evidence/);
+});

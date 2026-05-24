@@ -8,6 +8,8 @@ import {
   reviewTarget
 } from "./reviewModel";
 import type { LensFinding, LensName, Severity } from "./types";
+import { dependencyGraphAnalysis } from "./analysis/dependencyGraph";
+import type { DependencyFinding, DependencyNode } from "./analysis/dependencyGraph";
 
 function severityClass(severity: Severity): string {
   return `severity-${severity.toLowerCase().replace(/\s+/g, "-")}`;
@@ -116,6 +118,10 @@ type GraphMapProps = {
 };
 
 function GraphMap({ activeLens, summaryCopy, summaryTitle }: GraphMapProps) {
+  if (activeLens === "Dependencies") {
+    return <DependencyGraphLens summaryCopy={summaryCopy} summaryTitle={summaryTitle} />;
+  }
+
   return (
     <section className="pane graph-map" aria-labelledby="graph-map-title">
       <div className="pane-heading">
@@ -142,11 +148,109 @@ function GraphMap({ activeLens, summaryCopy, summaryTitle }: GraphMapProps) {
   );
 }
 
+function DependencyGraphLens({
+  summaryCopy,
+  summaryTitle
+}: {
+  summaryCopy: string;
+  summaryTitle: string;
+}) {
+  const topFindings = dependencyGraphAnalysis.findings.slice(0, 5);
+
+  return (
+    <section className="pane graph-map dependency-graph-lens" aria-labelledby="graph-map-title">
+      <div className="pane-heading">
+        <p className="eyebrow" id="active-lens-label">
+          Dependencies lens
+        </p>
+        <h2 id="graph-map-title">Dependency Graph</h2>
+      </div>
+
+      <div className="dependency-summary-strip" aria-label="Dependency graph risk summary">
+        <MetricTile label="New edges" value={dependencyGraphAnalysis.summary.newEdgeCount} />
+        <MetricTile label="Cycles" value={dependencyGraphAnalysis.summary.cycleCount} />
+        <MetricTile label="Boundary risks" value={dependencyGraphAnalysis.summary.boundaryRiskCount} />
+        <MetricTile label="AI direct imports" value={dependencyGraphAnalysis.summary.directAiImportCount} />
+      </div>
+
+      <div className="dependency-map" aria-label="Dependency graph map">
+        {dependencyGraphAnalysis.edges.map((edge) => {
+          const from = dependencyGraphAnalysis.nodes.find((node) => node.id === edge.from);
+          const to = dependencyGraphAnalysis.nodes.find((node) => node.id === edge.to);
+
+          if (!from || !to) {
+            return null;
+          }
+
+          return (
+            <div
+              className={`dependency-edge ${edge.introducedByChange ? "is-new" : ""}`}
+              key={edge.id}
+            >
+              <span>{from.label}</span>
+              <strong>{edge.introducedByChange ? "new edge" : edge.kind}</strong>
+              <span>{to.label}</span>
+            </div>
+          );
+        })}
+
+        <div className="dependency-node-grid">
+          {dependencyGraphAnalysis.nodes.map((node) => (
+            <DependencyNodeCard key={node.id} node={node} />
+          ))}
+        </div>
+      </div>
+
+      <div className="dependency-findings">
+        <h3>{summaryTitle}</h3>
+        <p>{summaryCopy}</p>
+        <div className="dependency-finding-list">
+          {topFindings.map((finding) => (
+            <article className="dependency-finding" key={finding.id}>
+              <span className={`severity ${severityClass(finding.severity)}`}>
+                {finding.severity}
+              </span>
+              <div>
+                <strong>{finding.title}</strong>
+                <p>{finding.evidence}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function MetricTile({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="metric-tile">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function DependencyNodeCard({ node }: { node: DependencyNode }) {
+  return (
+    <article className={`dependency-node dependency-layer-${node.layer}`}>
+      <span>{node.layer}</span>
+      <strong>{node.label}</strong>
+      <small>
+        {node.owner}
+        {node.aiGenerated ? " / AI generated" : ""}
+      </small>
+    </article>
+  );
+}
+
 type DetailCardProps = {
   finding: LensFinding;
 };
 
 function DetailCard({ finding }: DetailCardProps) {
+  const dependencyFinding = dependencyGraphAnalysis.findings[0];
+
   return (
     <aside className="pane detail-card" aria-labelledby="detail-card-title">
       <div className="pane-heading">
@@ -176,8 +280,26 @@ function DetailCard({ finding }: DetailCardProps) {
             </dd>
           </div>
         </dl>
+
+        {finding.lens === "Dependencies" && dependencyFinding ? (
+          <DependencyEvidence finding={dependencyFinding} />
+        ) : null}
       </article>
     </aside>
+  );
+}
+
+function DependencyEvidence({ finding }: { finding: DependencyFinding }) {
+  return (
+    <section className="dependency-evidence" aria-label="Dependency graph evidence">
+      <h4>Dependency graph evidence</h4>
+      <p>{finding.kind}</p>
+      <ul>
+        <li>{finding.nodeIds.length} modules involved</li>
+        <li>{finding.edgeIds.length} dependency edges involved</li>
+        <li>Evidence comes from the typed mock repository analyzer.</li>
+      </ul>
+    </section>
   );
 }
 
