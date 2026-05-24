@@ -43,3 +43,11 @@ test("app data covers each required lens", async () => {
   assert.match(app, /rankedItems/);
   assert.match(app, /activateLens/);
 });
+
+test("product guide defines Review Lens as semantic code review, not generic review management", async () => {
+  const guide = await readFile(new URL("../PRODUCT_GUIDE.md", import.meta.url), "utf8");
+
+  assert.match(guide, /cognitive semantic code review GUI/);
+  assert.match(guide, /not a generic review management tool/i);
+  assert.match(guide, /AI-generated code/);
+});

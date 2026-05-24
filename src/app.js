@@ -1,19 +1,19 @@
 const lenses = {
   "Overview": {
-    summaryTitle: "Review readiness overview",
+    summaryTitle: "Generated patch risk overview",
     summaryCopy:
-      "A cognitive review queue that separates blockers, semantic questions, evidence, and final decision context.",
-    itemTitle: "Review scope needs one decision owner",
+      "A cognitive review surface that ranks semantic findings before a human reviewer spends attention on raw lines.",
+    itemTitle: "Generated code changed behavior across review lenses",
     severity: "Medium",
-    evidence: "The review has multiple lenses but no final approval owner selected.",
-    question: "Who decides whether elevated semantic risk is accepted?",
+    evidence: "The mock review target touches contracts, security boundaries, and failure behavior in one patch.",
+    question: "Which semantic finding deserves source-level verification first?",
     link: "#overview"
   },
   "Semantic Diff": {
     summaryTitle: "Meaning-level change map",
     summaryCopy:
       "Highlights behavior shifts, renamed concepts, invariant changes, and code paths whose meaning changed more than their line count.",
-    itemTitle: "Validation path accepts a wider payload shape",
+    itemTitle: "Generated validation path accepts a wider payload shape",
     severity: "High",
     evidence: "Input normalization moved before strict validation in the mocked controller flow.",
     question: "Does the product contract allow legacy clients to pass partial payloads?",
@@ -53,7 +53,7 @@ const lenses = {
     summaryTitle: "Dependency relationship lens",
     summaryCopy:
       "Frames dependency updates by runtime exposure, transitive impact, package health, and migration work.",
-    itemTitle: "Runtime dependency should declare owner review",
+    itemTitle: "Runtime dependency needs supply-chain review",
     severity: "Low",
     evidence: "The skeleton reserves dependency review without real package analysis yet.",
     question: "Which team owns dependency acceptance for this repo?",
@@ -63,7 +63,7 @@ const lenses = {
     summaryTitle: "Failure mode lens",
     summaryCopy:
       "Collects tests, incidents, retries, fallbacks, thrown errors, and operational signals that should affect review confidence.",
-    itemTitle: "No failure path evidence attached",
+    itemTitle: "Generated patch has no failure-path evidence",
     severity: "Medium",
     evidence: "The mocked change list includes risk but no linked failing test or incident.",
     question: "What observable failure would prove this change is unsafe?",
@@ -73,7 +73,7 @@ const lenses = {
     summaryTitle: "Package and release lens",
     summaryCopy:
       "Surfaces workspace packages, release boundaries, ownership, generated artifacts, and package-level compatibility.",
-    itemTitle: "Package impact needs release boundary",
+    itemTitle: "Package impact needs release-boundary context",
     severity: "Low",
     evidence: "The package view is prepared as a placeholder for future workspace scanning.",
     question: "Which package would publish or deploy this behavior?",
@@ -93,7 +93,7 @@ const lenses = {
     summaryTitle: "AI reviewer prompt workspace",
     summaryCopy:
       "Provides a structured prompt surface for asking an assistant to evaluate meaning, risk, contracts, and missing evidence.",
-    itemTitle: "Prompt should include accepted risk language",
+    itemTitle: "Prompt should preserve reviewer skepticism",
     severity: "Medium",
     evidence: "Decision notes and unresolved questions are visible in the review frame.",
     question: "What should the assistant treat as non-negotiable review policy?",
@@ -109,7 +109,7 @@ const rankedItems = [
     meta: "Auth, data access"
   },
   {
-    title: "Validation path accepts a wider payload shape",
+    title: "Generated validation path accepts a wider payload shape",
     lens: "Semantic Diff",
     severity: "High",
     meta: "Behavior, contracts"
@@ -121,7 +121,7 @@ const rankedItems = [
     meta: "Clients, versions"
   },
   {
-    title: "No failure path evidence attached",
+    title: "Generated patch has no failure-path evidence",
     lens: "Failures",
     severity: "Medium",
     meta: "Tests, rollback"

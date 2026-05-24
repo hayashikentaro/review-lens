@@ -1,422 +1,356 @@
 # Review Lens Product Guide
 
-## Overview
+## Product Definition
 
-Review Lens helps teams turn scattered product, code, and content feedback into clear review decisions. It is a workspace for collecting review evidence, identifying recurring issues, and deciding what needs action now, what can wait, and what should be closed.
+Review Lens is a cognitive semantic code review GUI for the AI-generated code era.
 
-The product is built for people who need to review complex work without losing context: product managers, engineering leads, designers, QA reviewers, and content editors.
+It is not a generic review management tool. It is not a ticket triage board, approval tracker, or comment inbox. Review Lens exists to help engineers inspect code changes by meaning, system behavior, risk, and evidence when the volume and shape of AI-generated code make line-by-line review insufficient.
+
+Review Lens treats a pull request or patch as a semantic object:
+
+- What behavior changed.
+- Which invariants may no longer hold.
+- Which contracts are affected.
+- Which dependencies and packages are touched.
+- Which failure modes became more likely.
+- Which questions a human reviewer must answer before trusting the change.
 
 ## Product Promise
 
-Review Lens gives every review a shared lens:
+Review Lens turns code review from raw diff reading into structured semantic inspection.
 
-- What changed.
-- What reviewers noticed.
-- Which issues matter.
-- Who owns the next action.
-- Whether the work is ready to move forward.
+The product helps a reviewer move between:
 
-The experience should feel calm, structured, and fast. Reviewers should spend less time reconstructing context and more time making useful judgments.
+- A risk-ranked list of changed concerns.
+- Lens-specific maps of code meaning and impact.
+- Evidence cards that explain why a change deserves attention.
+- Raw diff anchors for source-level verification.
+- AI review prompts that preserve the reviewer's intent and skepticism.
+
+The interface should feel like an engineering instrument: dense, calm, inspectable, and built for repeated expert use.
+
+## Why This Exists
+
+AI can generate large patches quickly. Those patches may compile, pass narrow tests, and look locally plausible while still changing product behavior, security boundaries, architectural assumptions, API contracts, or operational failure modes.
+
+Traditional code review UI is optimized around files and lines. Review Lens is optimized around cognitive review questions:
+
+- What did the code start meaning?
+- What did it stop guaranteeing?
+- Where did risk concentrate?
+- What evidence supports that concern?
+- What should a reviewer ask the AI or author next?
 
 ## Core Users
 
-### Review Owner
+### Staff Engineer Or Tech Lead
 
-The person responsible for driving a review to completion.
-
-Goals:
-
-- Create a review with enough context for others to contribute.
-- Gather feedback from multiple sources.
-- Prioritize feedback into actionable decisions.
-- Track unresolved risks before approval.
-
-Pain points:
-
-- Feedback is split across comments, docs, tickets, chat, and meetings.
-- Important concerns get buried under minor notes.
-- It is unclear when a review is truly done.
-
-### Reviewer
-
-The person giving feedback on submitted work.
+The senior reviewer who needs to understand whether an AI-assisted change is safe to merge.
 
 Goals:
 
-- Understand the review scope quickly.
-- Leave precise, useful feedback.
-- See whether their feedback was addressed.
-- Avoid repeating concerns already raised by others.
+- Identify semantic risk quickly.
+- See changed behavior across files and packages.
+- Check contracts, invariants, and architecture boundaries.
+- Decide where raw diff inspection matters most.
 
 Pain points:
 
-- Review context is incomplete.
-- Existing feedback is hard to scan.
-- There is no shared severity or decision framework.
+- AI-generated patches can be wide and superficially coherent.
+- The most dangerous change is often not the largest file diff.
+- Reviewing every line equally wastes attention.
 
-### Stakeholder
+### Security Or Reliability Reviewer
 
-The person who needs confidence in the outcome but may not contribute detailed feedback.
+The specialist reviewer focused on trust boundaries, abuse cases, data exposure, failures, and rollback safety.
 
 Goals:
 
-- See current review status at a glance.
-- Understand open risks and blockers.
-- Know whether approval is meaningful.
+- Find changed authorization, validation, and data-flow assumptions.
+- Identify new failure modes.
+- Connect findings to concrete evidence.
+- Ask precise blocking questions.
 
 Pain points:
 
-- Status summaries are vague.
-- Risks are not separated from low-priority feedback.
-- Decisions are hard to audit later.
+- Security and reliability risks are scattered across call paths.
+- Passing tests do not prove changed behavior is safe.
+- Raw diffs hide trust-boundary movement.
 
-## Key Concepts
+### AI-Assisted Developer
 
-### Review
+The engineer using an AI coding assistant and preparing a change for human review.
 
-A bounded review of a specific work item, such as a feature, design, release candidate, document, pull request, or policy.
+Goals:
 
-Each review includes:
+- Understand what the generated patch changed semantically.
+- Preflight likely review objections.
+- Produce a review prompt or summary that invites useful scrutiny.
+- Tighten tests, contracts, and explanations before handoff.
 
-- Title.
-- Summary.
-- Scope.
-- Source links.
-- Participants.
-- Review status.
-- Feedback items.
-- Final decision.
+Pain points:
 
-### Lens
+- The assistant may introduce behavior the developer did not intend.
+- Generated explanations may sound confident but miss hidden coupling.
+- The developer needs help becoming a better reviewer of generated code.
 
-A structured perspective used to evaluate feedback. Lenses help teams review with consistency.
+## Review Object
 
-Example lenses:
+The primary object in Review Lens is a code change set, usually a pull request, branch diff, patch, or local working tree delta.
 
-- Product quality.
-- User experience.
-- Technical risk.
-- Compliance.
-- Accessibility.
-- Release readiness.
+Each review object can include:
 
-### Feedback Item
+- Repository and branch context.
+- Changed files and packages.
+- Semantic findings.
+- Risk score.
+- Lens-specific evidence.
+- Raw diff anchors.
+- Reviewer questions.
+- AI review prompt material.
 
-A single review observation, concern, suggestion, or question.
+The product should avoid generic workflow fields unless they directly support code review judgment.
 
-Each item includes:
+## Core Lenses
 
-- Description.
-- Source.
-- Author.
-- Lens.
-- Severity.
-- Status.
-- Owner.
-- Resolution note.
+### Overview
 
-### Decision
+Summarizes review risk, changed areas, highest-risk findings, and what the reviewer should inspect first.
 
-The final review outcome.
+### Semantic Diff
 
-Possible decisions:
+Compares meaning rather than lines. It should eventually detect behavior changes, invariant shifts, renamed concepts, changed control flow, and altered data assumptions.
 
-- Approved.
-- Approved with follow-up.
-- Changes requested.
-- Blocked.
-- Closed without action.
+### Security
+
+Focuses on authorization, authentication, input validation, data exposure, secrets, trust boundaries, and unsafe defaults.
+
+### Architecture
+
+Shows module boundaries, ownership, coupling, dependency direction, domain leakage, and architectural drift.
+
+### API Contract
+
+Tracks changes to request and response shape, schemas, status codes, events, public methods, backward compatibility, and caller expectations.
+
+### Dependencies
+
+Surfaces dependency additions, removals, version movement, transitive exposure, runtime footprint, and supply-chain risk.
+
+### Failures
+
+Examines error paths, retries, fallbacks, observability, tests, migrations, rollback behavior, and operational failure modes.
+
+### Packages
+
+Maps changed packages, workspaces, generated artifacts, release boundaries, and package ownership.
+
+### Classic Diff
+
+Keeps raw line-oriented inspection available. Classic diff is a verification layer, not the product's main mental model.
+
+### AI Review Prompt
+
+Builds a structured prompt for an AI reviewer using the current semantic findings, evidence, open questions, and review policy.
 
 ## MVP Scope
 
-The first version should focus on creating reviews, collecting feedback, classifying feedback, and producing a clear decision summary.
+The first product version should establish the review frame before real Git analysis is implemented.
 
 ### In Scope
 
-- Create, edit, and archive reviews.
-- Add source links to each review.
-- Add feedback items manually.
-- Assign each feedback item to a lens.
-- Set severity: blocker, high, medium, low, note.
-- Set item status: open, in progress, resolved, deferred, closed.
-- Assign owners to feedback items.
-- View review status by severity and item status.
-- Generate a review summary from current feedback.
-- Record a final decision and resolution notes.
+- A top-level review shell for a selected repository.
+- The required lens tabs.
+- A three-pane layout: change list, graph or map, detail card.
+- Mock risk-ranked semantic findings.
+- Lens-specific placeholder maps and summaries.
+- Evidence and reviewer-question detail cards.
+- Raw diff placeholder links.
+- AI review prompt placeholder content.
+- Tests that protect the required product structure.
 
-### Out of Scope For MVP
+### Out Of Scope For MVP
 
-- Automated imports from GitHub, Linear, Slack, Figma, or docs.
-- AI-generated feedback.
-- Real-time collaborative editing.
-- Custom workflow automation.
-- Organization-wide analytics.
-- Fine-grained permission controls.
+- Real Git parsing.
+- Pull request import.
+- AST or language-server analysis.
+- AI-generated findings.
+- Authentication.
+- Multi-user review workflow.
+- Persistent storage.
+- Generic review assignment or approval tracking.
 
-These can come later once the core review workflow feels reliable.
+## Primary Workflow
 
-## Primary Workflows
+### Inspect A Generated Patch
 
-### Create A Review
-
-1. Review owner creates a review.
-2. Owner adds a concise summary and defines scope.
-3. Owner attaches relevant source links.
-4. Owner invites or names reviewers.
-5. Review starts in `Draft` or `Open` status.
-
-Success criteria:
-
-- A reviewer can understand what is being reviewed in under one minute.
-- The review scope makes clear what feedback is welcome.
-
-### Add Feedback
-
-1. Reviewer opens a review.
-2. Reviewer scans existing feedback grouped by lens or severity.
-3. Reviewer adds a feedback item.
-4. Reviewer selects lens, severity, and optional source.
-5. Item starts as `Open`.
+1. Reviewer opens a repository or patch.
+2. Review Lens shows a risk score and risk-ranked findings.
+3. Reviewer chooses a lens based on the kind of concern.
+4. The center pane shows a semantic map for that lens.
+5. The detail pane explains evidence, reviewer questions, and raw diff anchors.
+6. Reviewer uses the AI Review Prompt lens to ask targeted follow-up questions.
+7. Reviewer verifies critical findings in Classic Diff before merge.
 
 Success criteria:
 
-- Feedback can be added without ceremony.
-- Important concerns are easy to distinguish from notes.
+- The reviewer can identify the first three areas worth human attention.
+- Each high-risk finding has evidence and a concrete review question.
+- The UI never implies that AI confidence replaces human verification.
 
-### Triage Feedback
+## Finding Severity
 
-1. Review owner reviews open feedback.
-2. Owner assigns owners and updates statuses.
-3. Owner marks low-value items as deferred or closed with a note.
-4. Owner keeps blockers and high-severity issues visible.
-
-Success criteria:
-
-- The current risk profile is obvious.
-- Every unresolved important item has an owner.
-
-### Decide Review Outcome
-
-1. Review owner checks unresolved blockers and high-severity items.
-2. Owner writes a short decision note.
-3. Owner selects the final decision.
-4. Review moves to a completed state.
-
-Success criteria:
-
-- The decision explains why the work can or cannot proceed.
-- Future readers can audit what was considered.
-
-## Review Statuses
-
-- `Draft`: Review is being prepared.
-- `Open`: Reviewers can add feedback.
-- `Triage`: Feedback is being sorted and assigned.
-- `Ready for decision`: No known blockers remain, or remaining risks are accepted.
-- `Completed`: Final decision is recorded.
-- `Archived`: Review is retained but no longer active.
-
-## Feedback Severity
-
-- `Blocker`: Must be resolved before approval.
-- `High`: Important issue that meaningfully affects quality, safety, or delivery.
-- `Medium`: Should be addressed if practical.
-- `Low`: Minor improvement or cleanup.
-- `Note`: Observation, praise, question, or context that may not require action.
+- `Blocker`: A semantic or safety concern that should prevent merge until answered or fixed.
+- `High`: A meaningful behavior, contract, security, or failure-mode risk.
+- `Medium`: A review concern that likely needs explanation, tests, or scoped inspection.
+- `Low`: A small concern, cleanup risk, or weak signal.
+- `Note`: Context that helps review but is not itself a risk.
 
 ## UX Principles
 
-- Prioritize scanability over decoration.
-- Keep the review decision visible from every review detail view.
-- Separate blockers from ordinary feedback.
-- Make ownership and status obvious.
-- Let users collapse low-priority noise.
-- Avoid forcing every note into an action item.
-- Preserve context for future audits.
+- Optimize for reviewer attention, not task management.
+- Put risk-ranked semantic findings before file lists.
+- Keep raw diff access one click away from every finding.
+- Distinguish evidence from speculation.
+- Show reviewer questions in concrete engineering language.
+- Treat AI output as review support, not authority.
+- Make dense information scannable without turning the UI into a dashboard full of decorative cards.
+- Keep the interface calm, compact, and source-verifiable.
 
 ## Information Architecture
 
-### Review List
-
-Shows active reviews with:
-
-- Title.
-- Status.
-- Decision, if completed.
-- Open blockers.
-- Open high-severity items.
-- Last updated time.
-- Owner.
-
-### Review Detail
+### Header
 
 Shows:
 
-- Review summary and scope.
-- Source links.
-- Participants.
-- Status and decision controls.
-- Feedback grouped by lens, severity, owner, or status.
-- Decision summary.
+- Product name.
+- Repository selector mock.
+- Review risk score.
+- Current review target.
 
-### Feedback Detail
+### Lens Tabs
 
-Shows:
+Shows the required top-level lenses:
 
-- Full feedback text.
-- Source and author.
-- Lens.
+- Overview.
+- Semantic Diff.
+- Security.
+- Architecture.
+- API Contract.
+- Dependencies.
+- Failures.
+- Packages.
+- Classic Diff.
+- AI Review Prompt.
+
+### Change List Pane
+
+Shows risk-ranked semantic findings:
+
 - Severity.
-- Status.
-- Owner.
-- Resolution note.
-- Activity history.
+- Finding title.
+- Lens.
+- Affected concept, package, or file area.
 
-## Suggested Data Model
+This pane is not a generic task list.
 
-### Review
+### Graph / Map Pane
+
+Shows a lens-specific visualization placeholder:
+
+- Semantic flow.
+- Trust boundary.
+- Dependency relationship.
+- Package impact.
+- Failure path.
+- Prompt context.
+
+This pane should help the reviewer reason about meaning before reading raw lines.
+
+### Detail Card Pane
+
+Shows the selected finding:
+
+- Severity.
+- Finding title.
+- Evidence.
+- Reviewer question.
+- Raw diff link.
+
+The detail card should make the next human review action obvious.
+
+## Suggested Future Data Model
+
+### Review Target
 
 - `id`
-- `title`
-- `summary`
-- `scope`
-- `status`
-- `decision`
-- `decision_note`
-- `owner_id`
+- `repository`
+- `base_ref`
+- `head_ref`
+- `provider`
 - `created_at`
 - `updated_at`
-- `completed_at`
 
-### Review Source
-
-- `id`
-- `review_id`
-- `label`
-- `url`
-- `source_type`
-
-### Review Participant
+### Semantic Finding
 
 - `id`
-- `review_id`
-- `user_id`
-- `role`
-
-### Feedback Item
-
-- `id`
-- `review_id`
-- `body`
-- `source_id`
-- `author_id`
+- `review_target_id`
 - `lens`
 - `severity`
-- `status`
-- `owner_id`
-- `resolution_note`
-- `created_at`
-- `updated_at`
-- `resolved_at`
+- `title`
+- `summary`
+- `evidence`
+- `reviewer_question`
+- `raw_diff_anchor`
+- `affected_files`
+- `affected_packages`
 
-### Activity Event
+### Lens Map
 
 - `id`
-- `review_id`
-- `feedback_item_id`
-- `actor_id`
-- `event_type`
-- `event_payload`
+- `review_target_id`
+- `lens`
+- `nodes`
+- `edges`
+- `summary`
+
+### AI Review Prompt
+
+- `id`
+- `review_target_id`
+- `prompt`
+- `included_findings`
+- `review_policy`
 - `created_at`
-
-## MVP Screens
-
-- Review list.
-- Create review.
-- Review detail.
-- Add feedback.
-- Feedback item drawer or detail panel.
-- Decision modal.
-
-## Empty States
-
-### No Reviews
-
-Invite the user to create the first review. Emphasize that a review can start with only a title, summary, and source link.
-
-### No Feedback
-
-Show that the review is ready for comments. Provide a clear add-feedback action.
-
-### No Open Blockers
-
-Signal that no blocker feedback is currently open, while still showing unresolved high and medium items.
 
 ## Metrics
 
-Early product metrics:
+Early product metrics should measure review usefulness rather than generic throughput:
 
-- Reviews created per week.
-- Feedback items per review.
-- Percentage of feedback with severity set.
-- Percentage of high or blocker items with owners.
-- Median time from review open to decision.
-- Reviews completed with decision notes.
-
-Quality indicators:
-
-- Fewer unresolved blocker items at decision time.
-- More feedback resolved or explicitly deferred.
-- Clearer ownership for important feedback.
+- Number of high-risk findings inspected.
+- Percentage of findings with raw diff anchors.
+- Percentage of high-risk findings with reviewer questions.
+- Time to first meaningful review question.
+- Number of generated-code risks caught before merge.
+- Reviewer edits to AI-generated prompts.
 
 ## Future Directions
 
-- Import comments from GitHub pull requests.
-- Import issues from Linear.
-- Import annotations from Figma.
-- Summarize feedback clusters.
-- Suggest severity based on team rules.
-- Detect duplicate feedback.
-- Track recurring review themes across projects.
-- Support organization-specific lenses.
-- Add approval policies by review type.
+- GitHub pull request import.
+- Local working-tree diff ingestion.
+- AST-backed semantic diff.
+- Dependency graph extraction.
+- Package and workspace ownership maps.
+- AI-assisted finding generation with evidence requirements.
+- Prompt export for external AI reviewers.
+- Policy-aware review lenses per repository.
+- Classic diff anchors linked to semantic findings.
 
 ## Open Product Questions
 
-- Should lenses be fixed in MVP or configurable per workspace?
-- Should reviews support multiple final approvers?
-- Should comments and feedback items be separate concepts?
-- Should deferred feedback automatically create follow-up tasks?
-- What review types should be first-class: code, design, release, document, or general?
-- What source integrations matter most after manual entry works well?
-
-## Initial Milestones
-
-### Milestone 1: Manual Review Workflow
-
-- Review list.
-- Create review.
-- Review detail.
-- Manual feedback entry.
-- Severity and status tracking.
-
-### Milestone 2: Triage And Decision
-
-- Feedback ownership.
-- Filtering and grouping.
-- Decision recording.
-- Review summary.
-
-### Milestone 3: Source-Aware Reviews
-
-- Source links.
-- Source-specific feedback references.
-- Activity history.
-- Exportable decision summary.
-
-### Milestone 4: Integrations
-
-- GitHub pull request import.
-- Linear issue follow-up.
-- Slack notification summaries.
-
+- Which language ecosystem should receive semantic analysis first?
+- Should findings be generated locally, remotely, or both?
+- What evidence standard is required before a finding can be labeled `High` or `Blocker`?
+- How should Review Lens show uncertainty without hiding risk?
+- Which AI review prompts should be built in as defaults?
+- What is the minimum useful raw diff anchor format?
