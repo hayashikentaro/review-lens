@@ -10,8 +10,11 @@ import {
 import type { LensFinding, LensName } from "./types";
 import { dependencyGraphAnalysis } from "./analysis/dependencyGraph";
 import type { DependencyFinding } from "./analysis/dependencyGraph";
+import { securityAnalysis } from "./analysis/securityRisk";
+import type { SecurityFinding } from "./analysis/securityRisk";
 import { ArchitectureBoundaryLens } from "./components/ArchitectureBoundaryLens";
 import { DependencyGraphLens } from "./components/DependencyGraphLens";
+import { SecurityLens } from "./components/SecurityLens";
 import { severityClass } from "./components/severity";
 
 function Header() {
@@ -117,6 +120,10 @@ type GraphMapProps = {
 };
 
 function GraphMap({ activeLens, summaryCopy, summaryTitle }: GraphMapProps) {
+  if (activeLens === "Security") {
+    return <SecurityLens summaryCopy={summaryCopy} summaryTitle={summaryTitle} />;
+  }
+
   if (activeLens === "Architecture") {
     return <ArchitectureBoundaryLens summaryCopy={summaryCopy} summaryTitle={summaryTitle} />;
   }
@@ -165,6 +172,7 @@ function DetailCard({ finding }: DetailCardProps) {
             item.kind === "god-module"
         )
       : dependencyGraphAnalysis.findings[0];
+  const securityFinding = securityAnalysis.findings[0];
 
   return (
     <aside className="pane detail-card" aria-labelledby="detail-card-title">
@@ -199,6 +207,9 @@ function DetailCard({ finding }: DetailCardProps) {
         {(finding.lens === "Dependencies" || finding.lens === "Architecture") && dependencyFinding ? (
           <DependencyEvidence finding={dependencyFinding} lens={finding.lens} />
         ) : null}
+        {finding.lens === "Security" && securityFinding ? (
+          <SecurityEvidence finding={securityFinding} />
+        ) : null}
       </article>
     </aside>
   );
@@ -213,6 +224,20 @@ function DependencyEvidence({ finding, lens }: { finding: DependencyFinding; len
         <li>{finding.nodeIds.length} modules involved</li>
         <li>{finding.edgeIds.length} dependency edges involved</li>
         <li>Evidence comes from the typed mock repository analyzer.</li>
+      </ul>
+    </section>
+  );
+}
+
+function SecurityEvidence({ finding }: { finding: SecurityFinding }) {
+  return (
+    <section className="dependency-evidence security-evidence" aria-label="Security evidence">
+      <h4>Security danger path evidence</h4>
+      <p>{finding.kind}</p>
+      <ul>
+        <li>{finding.nodeIds.length} modules involved</li>
+        <li>{finding.edgeIds.length} dependency edges involved</li>
+        <li>{finding.dataClassifications.join(", ")} data classification</li>
       </ul>
     </section>
   );

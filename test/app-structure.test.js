@@ -102,3 +102,28 @@ test("architecture boundary lens uses dependency graph analysis", async () => {
   assert.match(app, /activeLens === "Architecture"/);
   assert.match(reviewModel, /topArchitectureFinding/);
 });
+
+test("security lens derives danger paths from typed security analysis", async () => {
+  const securityAnalysis = await readFile(
+    new URL("../src/analysis/securityRisk.ts", import.meta.url),
+    "utf8"
+  );
+  const securityLens = await readFile(
+    new URL("../src/components/SecurityLens.tsx", import.meta.url),
+    "utf8"
+  );
+  const app = await readFile(new URL("../src/App.tsx", import.meta.url), "utf8");
+  const reviewModel = await readFile(new URL("../src/reviewModel.ts", import.meta.url), "utf8");
+
+  assert.match(securityAnalysis, /export type SecurityDataFlow/);
+  assert.match(securityAnalysis, /export type SecurityFinding/);
+  assert.match(securityAnalysis, /export function analyzeSecurityRisk/);
+  assert.match(securityAnalysis, /trust-boundary-crossing/);
+  assert.match(securityAnalysis, /external-data-transfer/);
+  assert.match(securityAnalysis, /secret-access/);
+  assert.match(securityAnalysis, /unsafe-logging/);
+  assert.match(securityLens, /Danger Path Map/);
+  assert.match(securityLens, /What new danger paths/);
+  assert.match(app, /activeLens === "Security"/);
+  assert.match(reviewModel, /topSecurityFinding/);
+});

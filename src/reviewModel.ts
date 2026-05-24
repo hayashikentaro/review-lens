@@ -1,7 +1,9 @@
 import type { LensDefinition, LensFinding, LensName, ReviewTarget } from "./types";
 import { dependencyGraphAnalysis } from "./analysis/dependencyGraph";
+import { securityAnalysis } from "./analysis/securityRisk";
 
 const topDependencyFinding = dependencyGraphAnalysis.findings[0];
+const topSecurityFinding = securityAnalysis.findings[0];
 const topArchitectureFinding =
   dependencyGraphAnalysis.findings.find(
     (finding) =>
@@ -33,12 +35,16 @@ export const reviewTarget: ReviewTarget = {
 export const findings: LensFinding[] = [
   {
     id: "security-privilege-boundary",
-    title: "Privilege boundary should be named explicitly",
+    title: topSecurityFinding?.title ?? "Security danger path needs review",
     lens: "Security",
-    severity: "Blocker",
-    meta: "Auth, data access",
-    evidence: "Mocked admin action sits next to account-level read behavior.",
-    question: "Which role or policy should gate this operation?",
+    severity: topSecurityFinding?.severity ?? "High",
+    meta: "Danger path",
+    evidence:
+      topSecurityFinding?.evidence ??
+      "Security Lens derives danger paths from dependency graph and mock security data.",
+    question:
+      topSecurityFinding?.question ??
+      "What new danger path did this change introduce?",
     sourceAnchor: "#security"
   },
   {
