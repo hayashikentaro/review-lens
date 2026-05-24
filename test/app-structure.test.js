@@ -151,3 +151,27 @@ test("package addition lens treats package additions as trust-boundary events", 
   assert.match(app, /activeLens === "Packages"/);
   assert.match(reviewModel, /topPackageFinding/);
 });
+
+test("api contract lens derives compatibility risk from typed contract analysis", async () => {
+  const apiAnalysis = await readFile(
+    new URL("../src/analysis/apiContract.ts", import.meta.url),
+    "utf8"
+  );
+  const apiLens = await readFile(
+    new URL("../src/components/ApiContractLens.tsx", import.meta.url),
+    "utf8"
+  );
+  const app = await readFile(new URL("../src/App.tsx", import.meta.url), "utf8");
+  const reviewModel = await readFile(new URL("../src/reviewModel.ts", import.meta.url), "utf8");
+
+  assert.match(apiAnalysis, /export type ApiContractChange/);
+  assert.match(apiAnalysis, /export type ApiContractFinding/);
+  assert.match(apiAnalysis, /export function analyzeApiContracts/);
+  assert.match(apiAnalysis, /request-shape-change/);
+  assert.match(apiAnalysis, /response-shape-change/);
+  assert.match(apiAnalysis, /status-code-change/);
+  assert.match(apiLens, /Contract Delta Map/);
+  assert.match(apiLens, /Did this PR change public or internal contracts/);
+  assert.match(app, /activeLens === "API Contract"/);
+  assert.match(reviewModel, /topApiContractFinding/);
+});

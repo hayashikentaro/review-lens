@@ -1,4 +1,6 @@
 import { useMemo, useState } from "react";
+import { apiContractAnalysis } from "./analysis/apiContract";
+import type { ApiContractFinding } from "./analysis/apiContract";
 import {
   findings,
   getFinding,
@@ -14,6 +16,7 @@ import { packageAdditionAnalysis } from "./analysis/packageAddition";
 import type { PackageFinding } from "./analysis/packageAddition";
 import { securityAnalysis } from "./analysis/securityRisk";
 import type { SecurityFinding } from "./analysis/securityRisk";
+import { ApiContractLens } from "./components/ApiContractLens";
 import { ArchitectureBoundaryLens } from "./components/ArchitectureBoundaryLens";
 import { DependencyGraphLens } from "./components/DependencyGraphLens";
 import { PackageAdditionLens } from "./components/PackageAdditionLens";
@@ -123,6 +126,10 @@ type GraphMapProps = {
 };
 
 function GraphMap({ activeLens, summaryCopy, summaryTitle }: GraphMapProps) {
+  if (activeLens === "API Contract") {
+    return <ApiContractLens summaryCopy={summaryCopy} summaryTitle={summaryTitle} />;
+  }
+
   if (activeLens === "Packages") {
     return <PackageAdditionLens summaryCopy={summaryCopy} summaryTitle={summaryTitle} />;
   }
@@ -181,6 +188,7 @@ function DetailCard({ finding }: DetailCardProps) {
       : dependencyGraphAnalysis.findings[0];
   const securityFinding = securityAnalysis.findings[0];
   const packageFinding = packageAdditionAnalysis.findings[0];
+  const apiContractFinding = apiContractAnalysis.findings[0];
 
   return (
     <aside className="pane detail-card" aria-labelledby="detail-card-title">
@@ -221,8 +229,25 @@ function DetailCard({ finding }: DetailCardProps) {
         {finding.lens === "Packages" && packageFinding ? (
           <PackageEvidence finding={packageFinding} />
         ) : null}
+        {finding.lens === "API Contract" && apiContractFinding ? (
+          <ApiContractEvidence finding={apiContractFinding} />
+        ) : null}
       </article>
     </aside>
+  );
+}
+
+function ApiContractEvidence({ finding }: { finding: ApiContractFinding }) {
+  return (
+    <section className="dependency-evidence api-contract-evidence" aria-label="API contract evidence">
+      <h4>Contract compatibility evidence</h4>
+      <p>{finding.kind}</p>
+      <ul>
+        <li>{finding.changeIds.length} contract change involved</li>
+        <li>{finding.callers.length} callers or integrations affected</li>
+        <li>Evidence comes from the typed mock API contract analyzer.</li>
+      </ul>
+    </section>
   );
 }
 

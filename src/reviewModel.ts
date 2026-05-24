@@ -1,9 +1,11 @@
 import type { LensDefinition, LensFinding, LensName, ReviewTarget } from "./types";
+import { apiContractAnalysis } from "./analysis/apiContract";
 import { dependencyGraphAnalysis } from "./analysis/dependencyGraph";
 import { packageAdditionAnalysis } from "./analysis/packageAddition";
 import { securityAnalysis } from "./analysis/securityRisk";
 
 const topDependencyFinding = dependencyGraphAnalysis.findings[0];
+const topApiContractFinding = apiContractAnalysis.findings[0];
 const topPackageFinding = packageAdditionAnalysis.findings[0];
 const topSecurityFinding = securityAnalysis.findings[0];
 const topArchitectureFinding =
@@ -61,12 +63,16 @@ export const findings: LensFinding[] = [
   },
   {
     id: "api-response-semantics",
-    title: "Response semantics need compatibility notes",
+    title: topApiContractFinding?.title ?? "API contract compatibility needs review",
     lens: "API Contract",
-    severity: "High",
-    meta: "Clients, versions",
-    evidence: "A successful response can now represent a deferred processing state.",
-    question: "Do current clients treat that state as terminal success?",
+    severity: topApiContractFinding?.severity ?? "High",
+    meta: "Contract risk",
+    evidence:
+      topApiContractFinding?.evidence ??
+      "API Contract Lens derives compatibility risk from typed mock contract deltas.",
+    question:
+      topApiContractFinding?.question ??
+      "Did this PR change public or internal contracts in a dangerous way?",
     sourceAnchor: "#api-contract"
   },
   {
@@ -192,9 +198,9 @@ export const lensDefinitions: LensDefinition[] = [
   },
   {
     name: "API Contract",
-    summaryTitle: "Contract compatibility lens",
+    summaryTitle: "Contract compatibility risk lens",
     summaryCopy:
-      "Tracks request shape, response shape, versioning, status codes, schemas, and caller expectations.",
+      "Tracks request shape, response shape, nullable semantics, status codes, schema validation, exported types, and caller compatibility.",
     primaryFindingId: "api-response-semantics"
   },
   {
