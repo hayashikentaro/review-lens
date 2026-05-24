@@ -1,0 +1,11 @@
+{
+  "name": "review-lens",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Initial Review Lens application skeleton.",
+  "type": "module",
+  "scripts": {
+    "check": "node --test",
+    "test": "node --test"
+  }
+}
